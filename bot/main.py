@@ -2,6 +2,7 @@ from ast import main
 import telebot
 import requests as rs
 from telebot import types
+from .search import search_city
 
 bot = telebot.TeleBot('5434924460:AAFszfluOZAAspa-4fcC_-Vwgb3AcAI0K6w')
 API_KEY = '407fb8f6663cfd63b826d070e32a6f69'
@@ -10,15 +11,16 @@ API_KEY = '407fb8f6663cfd63b826d070e32a6f69'
 def weather(message):
     bot.send_message(message.chat.id, 'Введите свой город', parse_mode='html')
     @bot.message_handler()
-    def get_user_text(message): 
-        if message.text == 'Иваново':
-            lat = '56,9972'
-            lon = '40,9714'
-            CURRENT_WEATHER_API_CALL = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric'
-            auth = rs.post(CURRENT_WEATHER_API_CALL)
-            res =  auth.json()     
-            mess = f'Погода в твоем городе {res["main"]["temp_max"]}'
-            bot.send_message(message.chat.id, mess, parse_mode='html')
+    def get_user_text(message):
+        geoloc = search_city(message.text)        
+        lat = geoloc[0]
+        lon = geoloc[-1]
+        CURRENT_WEATHER_API_CALL = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric'
+        auth = rs.post(CURRENT_WEATHER_API_CALL)
+        res =  auth.json()     
+        mess = f'Погода в твоем городе {res["main"]["temp_max"]}'
+        bot.send_message(message.chat.id, mess, parse_mode='html')
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
